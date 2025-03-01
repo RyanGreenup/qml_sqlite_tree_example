@@ -12,6 +12,8 @@ ApplicationWindow {
     visible: true
     title: "Animated Rectangle Demo"
     property int border_width
+    property bool dark_mode
+    Universal.theme: root.dark_mode ? Universal.Dark : Universal.Light
 
     // Menu Bar
     menuBar: AppMenu {}
