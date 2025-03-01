@@ -147,10 +147,6 @@ class TreeModel(QAbstractItemModel):
 
         # Get the children of the parent
         child_items = parent_item.children
-        print("-------")
-        print("child items are: ")
-        print([item.title for item in child_items])
-        print("-------")
         # Get the Specific child item
         child_item = child_items[row]
         # Create an index from that child item
@@ -205,17 +201,17 @@ class TreeModel(QAbstractItemModel):
         }
         r: dict[int, QByteArray] = roles  # pyright: ignore [reportAssignmentType]
         return r
-        
+
     @Slot(QModelIndex, result=str)
     def getItemDetails(self, index: QModelIndex) -> str:
         """Get details for the selected item (note body or folder info)"""
         if not index.isValid():
             return "No item selected"
-            
+
         item = self._get_item(index)
         if item is None:
             return "Invalid item"
-            
+
         if isinstance(item, Note):
             return item.body
         elif isinstance(item, Folder):

@@ -11,18 +11,9 @@ MenuBar {
         title: "&View"
 
         Action {
-            text: "&Usage guide"
+            text: "&Dark Mode"
             shortcut: "Ctrl+D"
             onTriggered: root.dark_mode = !root.dark_mode
-        }
-    }
-    MenuWithKbd {
-        id: menuEdit
-        title: qsTr("&Edit")
-        Action {
-            text: qsTr("&Undo")
-            shortcut: "Ctrl+U"
-            onTriggered: console.log("Undo Triggered")
         }
     }
 }

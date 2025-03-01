@@ -35,13 +35,22 @@ Menu {
                 text: transformString(control.text)
                 // text: "My <u>S</u>tring"
                 anchors.left: parent.left
-                // color: "white"
+                color: Universal.foreground
             }
 
             Text {
-                text: control.action.shortcut
+                function get_shortcut_text() {
+                    const s = control.action.shortcut
+                    if (typeof s  !== "undefined") {
+                        return s
+                    } else {
+                        return ""
+                    }
+
+                }
+                text: get_shortcut_text()
                 anchors.right: parent.right
-                // color: "white"
+                color: Universal.foreground
             }
         }
     }
