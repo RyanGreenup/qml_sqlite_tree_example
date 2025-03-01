@@ -138,6 +138,10 @@ class TreeModel(QAbstractItemModel):
 
         # Get the children of the parent
         child_items = parent_item.children
+        print("-------")
+        print("child items are: ")
+        print([item.title for item in child_items])
+        print("-------")
         # Get the Specific child item
         child_item = child_items[row]
         # Create an index from that child item
@@ -192,3 +196,21 @@ class TreeModel(QAbstractItemModel):
         }
         r: dict[int, QByteArray] = roles  # pyright: ignore [reportAssignmentType]
         return r
+
+
+    @Slot(int, int, result=str)
+    def getNoteBody(self, row: int, column: int) -> str:
+        print("000000000000000")
+        print(f"Calling Index for {row=}, {column=}")
+        print("000000000000000")
+        index = self.index(row, column)
+        disp = self.data(index)
+        print("zzzzzzzzzzzzzzzz")
+        item: Folder | Note = self._get_item(index)
+        if isinstance(item, Folder):
+            return f"Folder: {item.title}"
+
+        return item.body
+
+
+
