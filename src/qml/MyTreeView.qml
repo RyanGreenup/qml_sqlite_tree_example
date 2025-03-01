@@ -14,14 +14,12 @@ TreeView {
     // Signal to emit when the current item changes
     signal currentItemChanged(string statistics)
 
-    property int currentRow: -1
+    // property int currentRow: -1
 
     selectionModel: ItemSelectionModel {
         onCurrentChanged: {
             // When current index changes, emit the signal with item statistics
             if (currentIndex.row >= 0) {
-                // Update the currentRow property
-                treeView.currentRow = currentIndex.row;
                 let stats = treeModel.getNoteBody(currentIndex.row, currentIndex.column);
                 treeView.currentItemChanged(stats);
             }
