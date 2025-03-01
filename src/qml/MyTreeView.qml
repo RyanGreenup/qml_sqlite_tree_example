@@ -16,7 +16,13 @@ TreeView {
 
 
     selectionModel: ItemSelectionModel {
-        onCurrentChanged: 
+        onCurrentChanged: function(current, previous) {
+            if (current.valid) {
+                // Get details from the model and emit the signal
+                let details = treeModel.getItemDetails(current);
+                treeView.currentItemChanged(details);
+            }
+        }
     }
 
     // Connect to our Python model

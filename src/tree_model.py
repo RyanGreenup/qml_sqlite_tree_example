@@ -205,5 +205,24 @@ class TreeModel(QAbstractItemModel):
         }
         r: dict[int, QByteArray] = roles  # pyright: ignore [reportAssignmentType]
         return r
+        
+    @Slot(QModelIndex, result=str)
+    def getItemDetails(self, index: QModelIndex) -> str:
+        """Get details for the selected item (note body or folder info)"""
+        if not index.isValid():
+            return "No item selected"
+            
+        item = self._get_item(index)
+        if item is None:
+            return "Invalid item"
+            
+        if isinstance(item, Note):
+            return item.body
+        elif isinstance(item, Folder):
+            # For folders, return some basic info
+            child_count = len(item.children)
+            return f"Folder: {item.title}\nContains {child_count} items"
+        else:
+            return "Unknown item type"
 
 
