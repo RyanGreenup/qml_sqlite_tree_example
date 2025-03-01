@@ -7,3 +7,13 @@ requires-python = ">=3.12"
 dependencies = [
     "pyside6>=6.8.2.1",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+gui = "src.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
