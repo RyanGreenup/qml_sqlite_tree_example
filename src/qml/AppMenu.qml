@@ -8,12 +8,12 @@ MenuBar {
     id: menuBar
     MenuWithKbd {
         id: contextMenu
-        title: "&Help"
+        title: "&View"
 
         Action {
             text: "&Usage guide"
-            shortcut: "F1"
-            onTriggered: console.log("Usage Guide")
+            shortcut: "Ctrl+D"
+            onTriggered: root.dark_mode = !root.dark_mode
         }
     }
     MenuWithKbd {
