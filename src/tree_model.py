@@ -54,16 +54,16 @@ class TreeModel(QAbstractItemModel):
     def _get_item(self, index: QModelIndex | QPersistentModelIndex) -> Folder | Note | None:
         if not index.isValid():
             return None
-            
+
         untyped_item = index.internalPointer()  # pyright: ignore[reportAny]
         if untyped_item is None:
             print("Error: index.internalPointer() returned None", file=sys.stderr)
             return None
-            
+
         if not (isinstance(untyped_item, Folder) or isinstance(untyped_item, Note)):
             print(f"Error, Item in Tree has wrong type: {type(untyped_item)}, this is a bug!", file=sys.stderr)
             return None
-            
+
         item: Folder | Note = untyped_item
         return item
 
@@ -205,34 +205,5 @@ class TreeModel(QAbstractItemModel):
         }
         r: dict[int, QByteArray] = roles  # pyright: ignore [reportAssignmentType]
         return r
-
-
-    @Slot(int, int, result=str)
-    def getNoteBody(self, row: int, column: int) -> str:
-        print("000000000000000")
-        print(f"Calling Index for {row=}, {column=}")
-        print("000000000000000")
-        
-        # Get the index for the specified row and column
-        index = self.index(row, column)
-        if not index.isValid():
-            return "Invalid selection"
-            
-        # Get the item from the index
-        try:
-            item: Folder | Note = self._get_item(index)
-            if item is None:
-                return "No item selected"
-                
-            if isinstance(item, Folder):
-                return f"Folder: {item.title}"
-            elif isinstance(item, Note):
-                return item.body
-            else:
-                return f"Unknown item type: {type(item).__name__}"
-        except Exception as e:
-            print(f"Error in getNoteBody: {e}", file=sys.stderr)
-            return f"Error retrieving item: {str(e)}"
-
 
 
