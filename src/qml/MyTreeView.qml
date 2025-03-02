@@ -208,6 +208,8 @@ TreeView {
                 enabled: true
                 onTriggered: {
                     let index = tree_delegate.treeView.index(tree_delegate.row, tree_delegate.column);
+                    console.log("Row is: " + tree_delegate.row);
+
                     treeModel.createNewNote(index);
                 }
                 shortcut: "N"
