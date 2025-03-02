@@ -13,13 +13,12 @@ TreeView {
 
     // Signal to emit when the current item changes
     signal currentItemChanged(string statistics)
-    
+
     // Property to store the parent index for new notes
     property var currentParentIndex: null
 
-
     selectionModel: ItemSelectionModel {
-        onCurrentChanged: function(current, previous) {
+        onCurrentChanged: function (current, previous) {
             // current: QModelIndex
             if (current.valid) {
                 // Get details from the model and emit the signal
@@ -36,12 +35,12 @@ TreeView {
     Component.onCompleted: {
         keyEmitter.setView(treeView);
     }
-    
+
     // New Note Dialog
     NewNoteDialog {
         id: newNoteDialog
-        
-        onNoteCreated: function(title, body) {
+
+        onNoteCreated: function (title, body) {
             if (treeView.currentParentIndex) {
                 treeModel.createNoteWithDetails(treeView.currentParentIndex, title, body);
             }
@@ -167,9 +166,9 @@ TreeView {
             source: {
                 // Use decoration role to determine icon
                 if (tree_delegate.decoration === "folder") {
-                    return "qrc:///qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"
+                    return "qrc:///qt-project.org/styles/commonstyle/images/standardbutton-open-16.png";
                 } else {
-                    return "qrc:///qt-project.org/styles/commonstyle/images/file-16.png"
+                    return "qrc:///qt-project.org/styles/commonstyle/images/file-16.png";
                 }
             }
             opacity: tree_delegate.is_current_item() ? 1.0 : 0.8
@@ -222,13 +221,13 @@ TreeView {
                 enabled: true
                 onTriggered: {
                     // Get the current index
-                    let index = tree_delegate.treeView.selectionModel.currentIndex
-                    
+                    let index = tree_delegate.treeView.selectionModel.currentIndex;
+
                     // Store the current index for later use
-                    treeView.currentParentIndex = index
-                    
+                    treeView.currentParentIndex = index;
+
                     // Show the dialog
-                    newNoteDialog.open()
+                    newNoteDialog.open();
                 }
                 shortcut: "N"
             }
@@ -237,6 +236,16 @@ TreeView {
                 text: qsTr("&Copy Text")
                 onTriggered: {}
                 shortcut: "C"
+            }
+
+            MenuSeparator {}
+
+            Action {
+                text: qsTr("&Refresh Tree")
+                onTriggered: {
+                    treeModel.refreshTree();
+                }
+                shortcut: "R"
             }
         }
     }

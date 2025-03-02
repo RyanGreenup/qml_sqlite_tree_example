@@ -23,22 +23,17 @@ class TreeModel(QAbstractItemModel):
         # Create database handler
         self.db_handler = DatabaseHandler(db_connection)
 
-        # Create a dummy root item
+        # Create a dummy root item to set as invisible first item
         self.root_item = Folder(id="0", title="Root", parent=None)
 
-        # Get folders with notes and set them as children of root
-        self.tree_data: list[Folder] = self.db_handler.get_folders_with_notes()
-
-        # Connect root folders to the root item
-        for folder in self.tree_data:
-            folder.parent = self.root_item
-
-        # Set the folders as children of the root item
-        self.root_item.children = self.tree_data  # pyright: ignore [reportAttributeAccessIssue]
+        self._build_tree()
 
     @override
     def columnCount(
-        self, parent: QModelIndex | QPersistentModelIndex = QModelIndex() # pyright: ignore [reportCallInDefaultInitializer]
+        self,
+        parent: (
+            QModelIndex | QPersistentModelIndex
+        ) = QModelIndex(),  # pyright: ignore [reportCallInDefaultInitializer]
     ):
         fixed_columns = 1
         if parent.isValid():
@@ -51,7 +46,9 @@ class TreeModel(QAbstractItemModel):
         # Change this if you want more columns
         return fixed_columns
 
-    def _get_item(self, index: QModelIndex | QPersistentModelIndex) -> Folder | Note | None:
+    def _get_item(
+        self, index: QModelIndex | QPersistentModelIndex
+    ) -> Folder | Note | None:
         if not index.isValid():
             return None
 
@@ -61,7 +58,10 @@ class TreeModel(QAbstractItemModel):
             return None
 
         if not (isinstance(untyped_item, Folder) or isinstance(untyped_item, Note)):
-            print(f"Error, Item in Tree has wrong type: {type(untyped_item)}, this is a bug!", file=sys.stderr)
+            print(
+                f"Error, Item in Tree has wrong type: {type(untyped_item)}, this is a bug!",
+                file=sys.stderr,
+            )
             return None
 
         item: Folder | Note = untyped_item
@@ -83,7 +83,7 @@ class TreeModel(QAbstractItemModel):
             Qt.ItemDataRole.UserRole,
             Qt.ItemDataRole.EditRole,
             Qt.ItemDataRole.DecorationRole,
-            ]:
+        ]:
             return None
 
         column: int = index.column()
@@ -123,7 +123,9 @@ class TreeModel(QAbstractItemModel):
         self,
         section: int,
         orientation: Qt.Orientation,
-        role: int = int(Qt.ItemDataRole.DisplayRole),  # pyright: ignore [reportCallInDefaultInitializer]
+        role: int = int(
+            Qt.ItemDataRole.DisplayRole
+        ),  # pyright: ignore [reportCallInDefaultInitializer]
     ):
         if (
             orientation == Qt.Orientation.Horizontal
@@ -142,7 +144,9 @@ class TreeModel(QAbstractItemModel):
         self,
         row: int,
         column: int,
-        parent: QModelIndex | QPersistentModelIndex = QModelIndex(),  # pyright: ignore [reportCallInDefaultInitializer]
+        parent: (
+            QModelIndex | QPersistentModelIndex
+        ) = QModelIndex(),  # pyright: ignore [reportCallInDefaultInitializer]
     ) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
@@ -164,7 +168,9 @@ class TreeModel(QAbstractItemModel):
         return child_index
 
     @override
-    def parent(self, index: QModelIndex | QPersistentModelIndex):  # pyright: ignore [reportIncompatibleMethodOverride]
+    def parent(
+        self, index: QModelIndex | QPersistentModelIndex
+    ):  # pyright: ignore [reportIncompatibleMethodOverride]
         # Note the ignore is likely a stubs error, docs suggests this is correct
         # https://doc.qt.io/qtforpython-6/PySide6/QtCore/QAbstractItemModel.html#PySide6.QtCore.QAbstractItemModel.parent
         if not index.isValid():
@@ -179,7 +185,9 @@ class TreeModel(QAbstractItemModel):
         # Find the row of the parent in its parent's children
         if parent_item.parent is not None:
             parent_parent = parent_item.parent
-            row = parent_parent.children.index(parent_item)  # pyright: ignore [reportArgumentType]
+            row = parent_parent.children.index(
+                parent_item
+            )  # pyright: ignore [reportArgumentType]
         else:
             # This should not happen with our structure, but just in case
             row = 0
@@ -187,9 +195,12 @@ class TreeModel(QAbstractItemModel):
         return self.createIndex(row, 0, parent_item)
 
     @override
-    def rowCount(self,
-                 parent: QModelIndex | QPersistentModelIndex = QModelIndex()  # pyright: ignore [reportCallInDefaultInitializer]
-                 ):
+    def rowCount(
+        self,
+        parent: (
+            QModelIndex | QPersistentModelIndex
+        ) = QModelIndex(),  # pyright: ignore [reportCallInDefaultInitializer]
+    ):
         if parent.column() > 0:
             return 0
 
@@ -239,14 +250,16 @@ class TreeModel(QAbstractItemModel):
         parent_item = self._get_item(parent_index)
         if parent_item is None:
             return
-            
+
         # The actual note creation will be handled by createNoteWithDetails
         # This method now just signals that we want to create a note under this parent
         # The UI will show a dialog and then call createNoteWithDetails
         pass
-        
+
     @Slot(QModelIndex, str, str)
-    def createNoteWithDetails(self, parent_index: QModelIndex, title: str, body: str) -> None:
+    def createNoteWithDetails(
+        self, parent_index: QModelIndex, title: str, body: str
+    ) -> None:
         """Create a new note with the specified title and body under the parent item"""
         if not parent_index.isValid():
             return
@@ -263,12 +276,33 @@ class TreeModel(QAbstractItemModel):
 
         # Create the new note in the database and get the Note object
         new_note = self.db_handler.create_note(
-            title=title,
-            body=body,
-            parent=parent_item
+            title=title, body=body, parent=parent_item
         )
 
         # End inserting rows
         self.endInsertRows()
 
+    def _build_tree(self) -> None:
+        # Reload the data from the database
+        self.tree_data = self.db_handler.get_folders_with_notes()
 
+        # Connect root folders to the root item
+        for folder in self.tree_data:
+            folder.parent = self.root_item
+
+        # Set the folders as children of the root item
+        self.root_item.children = (
+            self.tree_data
+        )  # pyright: ignore [reportAttributeAccessIssue]
+
+
+    @Slot()
+    def refreshTree(self) -> None:
+        """Refresh the tree by reloading all data from the database"""
+        # Notify the view that we're about to reset the model
+        self.beginResetModel()
+
+        self._build_tree()
+
+        # Notify the view that the model has been reset
+        self.endResetModel()
