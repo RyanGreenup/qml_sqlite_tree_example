@@ -77,6 +77,7 @@ TreeView {
         required property int column
         required property bool current
         required property string display
+        required property string decoration
 
         // Rotate indicator when expanded by the user
         // (requires TreeView to have a selectionModel)
@@ -142,9 +143,27 @@ TreeView {
             }
         }
 
+        // Item type icon
+        Image {
+            id: itemIcon
+            x: padding + (tree_delegate.isTreeNode ? (tree_delegate.depth + 1) * tree_delegate.indentation : 0)
+            anchors.verticalCenter: parent.verticalCenter
+            width: 16
+            height: 16
+            source: {
+                // Use decoration role to determine icon
+                if (tree_delegate.decoration === "folder") {
+                    return "qrc:///qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"
+                } else {
+                    return "qrc:///qt-project.org/styles/commonstyle/images/file-16.png"
+                }
+            }
+            opacity: tree_delegate.is_current_item() ? 1.0 : 0.8
+        }
+
         Label {
             id: label
-            x: padding + (tree_delegate.isTreeNode ? (tree_delegate.depth + 1) * tree_delegate.indentation : 0)
+            x: itemIcon.x + itemIcon.width + 5 // Position after the icon with some spacing
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width - padding - x
             clip: true
@@ -183,7 +202,7 @@ TreeView {
             }
 
             MenuSeparator {}
-            
+
             Action {
                 text: qsTr("Create &New Note")
                 enabled: true

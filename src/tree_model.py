@@ -82,6 +82,7 @@ class TreeModel(QAbstractItemModel):
             role != Qt.ItemDataRole.DisplayRole
             and role != Qt.ItemDataRole.UserRole
             and role != Qt.ItemDataRole.EditRole
+            and role != Qt.ItemDataRole.DecorationRole
         ):
             return None
 
@@ -89,6 +90,10 @@ class TreeModel(QAbstractItemModel):
         row: int = index.row()
         _ = row
         item = self._get_item(index)
+
+        if role == Qt.ItemDataRole.DecorationRole and column == 0:
+            # Return a string that will be used to determine the icon in QML
+            return "folder" if isinstance(item, Folder) else "note"
 
         match column:
             case 0:
@@ -198,6 +203,7 @@ class TreeModel(QAbstractItemModel):
             Qt.ItemDataRole.DisplayRole: QByteArray(b"display"),
             Qt.ItemDataRole.UserRole: QByteArray(b"userData"),
             Qt.ItemDataRole.EditRole: QByteArray(b"edit"),
+            Qt.ItemDataRole.DecorationRole: QByteArray(b"decoration"),
         }
         r: dict[int, QByteArray] = roles  # pyright: ignore [reportAssignmentType]
         return r
