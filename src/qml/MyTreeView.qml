@@ -16,10 +16,11 @@ TreeView {
 
     // Property to store the parent index for new notes
     property var currentParentIndex: null
-    
+
     // Property to store expanded item IDs
     property var expanded_items: []
-    
+    property var current_item_before_refresh: ""
+
     // Helper functions for index/row conversion
     function get_row_from_index(index) {
         // Return the row from a model index
@@ -33,7 +34,21 @@ TreeView {
         // Create and return a model index for the given row and column
         return treeView.index(row, column);
     }
-    
+
+    function focus_note_from_id(id) {
+        let index = treeModel.get_index_by_id(id);
+
+        // Expand up to the previous current Item
+        treeView.expandToIndex(index);
+        // Focus that item again
+        forceLayout()
+        // Position at that item
+        positionViewAtRow(rowAtIndex(index), Qt.AlignVCenter)
+
+        // Set the current Item
+        // Set the current item using the selection model of the treeView AI!
+    }
+
     function get_indexes_from_ids(id_list) {
         var index_list = [];
         var row_list = [];
@@ -64,7 +79,7 @@ TreeView {
 
     // Connect to our Python model
     model: treeModel
-    
+
     // Track expanded and collapsed items
     onExpanded: function (row, depth) {
         // NOTE depth always 1 according to docs
@@ -73,10 +88,11 @@ TreeView {
         console.log("----------------_> " + index);
         let id = treeModel.get_id(index);
         let title = treeModel.get_title(index);
-        treeView.expanded_items.push(id);
+        let child_id = treeModel.get_first_child_id(index)
+        treeView.expanded_items.push(child_id);
         console.log("Expanded " + id + "( " + title + ") all: " + treeView.expanded_items);
     }
-    
+
     onCollapsed: function (row) {
         let index = get_index_from_row(row);
         let id = treeModel.get_id(index);
@@ -337,19 +353,29 @@ TreeView {
                 onTriggered: {
                     // Store current expanded items before refresh
                     let current_expanded = [...treeView.expanded_items];
-                    
+                    let current_item_index = tree_delegate.treeView.selectionModel.currentIndex;
+                    let current_item_id = treeModel.get_id(current_item_index)
+
                     // Refresh the tree
                     treeModel.refreshTree();
-                    
+                    treeView.expanded_items = [];
+
+                    // Unfold up to any unfolded items (so one short #TODO [maybe store the first child?])
+                    get_indexes_from_ids(current_expanded);
+
+                    // Restore the last item
+                    focus_note_from_id(current_item_id);
+
+
                     // Use a timer to ensure the model is fully updated before restoring
-                    Timer {
-                        interval: 100,
-                        running: true,
-                        onTriggered: {
-                            // Restore expanded state
-                            get_indexes_from_ids(current_expanded);
-                        }
-                    }
+                    // Timer {
+                    //     interval: 100,
+                    //     running: true,
+                    //     onTriggered: function() {
+                    //         // Restore expanded state
+                    //         get_indexes_from_ids(current_expanded);
+                    //     }
+                    // }
                 }
                 shortcut: "R"
             }
