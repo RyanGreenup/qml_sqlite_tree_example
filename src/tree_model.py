@@ -220,5 +220,39 @@ class TreeModel(QAbstractItemModel):
             return f"Folder: {item.title}\nContains {child_count} items"
         else:
             return "Unknown item type"
+    
+    @Slot(QModelIndex)
+    def createNewNote(self, parent_index: QModelIndex) -> None:
+        """Create a new note under the specified parent item"""
+        if not parent_index.isValid():
+            return
+            
+        parent_item = self._get_item(parent_index)
+        if parent_item is None:
+            return
+            
+        # Create a default title and body for the new note
+        new_title = "New Note"
+        new_body = "Enter your note here..."
+        
+        # Begin inserting rows
+        parent_row = parent_index.row()
+        parent_parent = self.parent(parent_index)
+        
+        # Get the position where the new note will be inserted
+        insert_position = len(parent_item.children)
+        
+        # Begin inserting rows
+        self.beginInsertRows(parent_index, insert_position, insert_position)
+        
+        # Create the new note in the database and get the Note object
+        new_note = self.db_handler.create_note(
+            title=new_title,
+            body=new_body,
+            parent=parent_item
+        )
+        
+        # End inserting rows
+        self.endInsertRows()
 
 

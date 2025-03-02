@@ -183,6 +183,16 @@ TreeView {
             }
 
             MenuSeparator {}
+            
+            Action {
+                text: qsTr("Create &New Note")
+                enabled: true
+                onTriggered: {
+                    let index = tree_delegate.treeView.index(tree_delegate.row, tree_delegate.column);
+                    treeModel.createNewNote(index);
+                }
+                shortcut: "N"
+            }
 
             Action {
                 text: qsTr("&Copy Text")
