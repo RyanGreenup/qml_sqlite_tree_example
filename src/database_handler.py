@@ -104,6 +104,68 @@ class DatabaseHandler:
                 result.append(note)
 
         return result
+        
+    def create_note(
+        self, 
+        title: str, 
+        body: str, 
+        parent: Note | Folder
+    ) -> Note:
+        """
+        Create a new note underneath a given parent item
+        
+        Args:
+            title: Title of the new note
+            body: Content of the new note
+            parent: Parent item (Note or Folder) under which to create the note
+            
+        Returns:
+            The newly created Note object
+        """
+        # Generate a unique ID for the new note
+        import uuid
+        note_id = str(uuid.uuid4())
+        
+        # Get the current timestamp
+        now = datetime.now()
+        
+        # Determine folder_id and parent_note_id based on parent type
+        folder_id = None
+        parent_note_id = None
+        
+        if isinstance(parent, Folder):
+            folder_id = parent.id
+        elif isinstance(parent, Note):
+            folder_id = parent.folder_id
+            parent_note_id = parent.id
+        else:
+            raise TypeError("Parent must be either a Note or Folder")
+            
+        # Insert the new note into the database
+        self.cursor.execute(
+            """
+            INSERT INTO notes (id, title, body, folder_id, parent_note_id, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (note_id, title, body, folder_id, parent_note_id, now, now)
+        )
+        self.connection.commit()
+        
+        # Create and return the Note object
+        note = Note(
+            id=note_id,
+            title=title,
+            body=body,
+            folder_id=folder_id,
+            parent=parent,
+            created_at=now,
+            updated_at=now
+        )
+        
+        # Add the new note to the parent's children
+        parent.children.append(note)
+        
+        return note
 
     def get_folders_with_notes(self) -> list[Folder]:
         """
