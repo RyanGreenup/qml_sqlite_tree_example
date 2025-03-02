@@ -25,7 +25,7 @@ class TreeModel(QAbstractItemModel):
 
         # Create a dummy root item to set as invisible first item
         self.root_item = Folder(id="0", title="Root", parent=None)
-        
+
         # Create a dictionary to store id -> index mapping
         self.id_to_index_map = {}
 
@@ -284,7 +284,7 @@ class TreeModel(QAbstractItemModel):
 
         # End inserting rows
         self.endInsertRows()
-        
+
         # Add the new note to the map
         new_index = self.createIndex(insert_position, 0, new_note)
         self.id_to_index_map[new_note.id] = new_index
@@ -301,7 +301,7 @@ class TreeModel(QAbstractItemModel):
         self.root_item.children = (
             self.tree_data
         )  # pyright: ignore [reportAttributeAccessIssue]
-        
+
         # Clear the existing map and rebuild it
         self.id_to_index_map = {}
         self._build_id_index_map()
@@ -310,7 +310,7 @@ class TreeModel(QAbstractItemModel):
         """Build a mapping of item IDs to their QModelIndex"""
         # Start with an empty map
         self.id_to_index_map = {}
-        
+
         # Process the root item's children (which are the top-level folders)
         for row, item in enumerate(self.root_item.children):
             # Create the index for this item
@@ -343,7 +343,7 @@ class TreeModel(QAbstractItemModel):
 
         # Notify the view that the model has been reset
         self.endResetModel()
-        
+
     @Slot(str, result=QModelIndex)
     def get_index_by_id(self, item_id: str) -> QModelIndex:
         """Get the QModelIndex for an item with the given ID"""
@@ -366,36 +366,47 @@ class TreeModel(QAbstractItemModel):
             return item.title
         else:
             return ""
-            
+
+    @Slot(QModelIndex, result=str)
+    def get_first_child_id(self, index: QModelIndex) -> str:
+        """
+        Used for the expandToIndex function on refresh
+        """
+        if (item := self._get_item(index)):
+            return item.children[0].id
+        else:
+            return ""
+
     @Slot(QModelIndex, str, result=bool)
     def update_title(self, index: QModelIndex, new_title: str) -> bool:
         """
         Update the title of a Note or Folder
-        
+
         Args:
             index: The QModelIndex of the item to update
             new_title: The new title to set
-            
+
         Returns:
             bool: True if the update was successful, False otherwise
         """
         if not index.isValid() or not new_title.strip():
             return False
-            
+
         item = self._get_item(index)
         if item is None:
             return False
-            
+
         try:
             # Update the title in the database and the object
             self.db_handler.update_title(item, new_title)
-            
+
             # Notify the view that the data has changed
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
-            
+
             # The ID hasn't changed, so we don't need to update the map
-            
+
             return True
         except Exception as e:
             print(f"Error updating title: {e}", file=sys.stderr)
             return False
+

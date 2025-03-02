@@ -45,7 +45,6 @@ TreeView {
         // Position at that item
         positionViewAtRow(rowAtIndex(index), Qt.AlignVCenter)
 
-        // Set the current Item
         // Set the current item using the selection model
         treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.ClearAndSelect);
     }
