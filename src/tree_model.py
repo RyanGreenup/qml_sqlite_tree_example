@@ -25,6 +25,9 @@ class TreeModel(QAbstractItemModel):
 
         # Create a dummy root item to set as invisible first item
         self.root_item = Folder(id="0", title="Root", parent=None)
+        
+        # Create a dictionary to store id -> index mapping
+        self.id_to_index_map = {}
 
         self._build_tree()
 
@@ -281,6 +284,10 @@ class TreeModel(QAbstractItemModel):
 
         # End inserting rows
         self.endInsertRows()
+        
+        # Add the new note to the map
+        new_index = self.createIndex(insert_position, 0, new_note)
+        self.id_to_index_map[new_note.id] = new_index
 
     def _build_tree(self) -> None:
         # Reload the data from the database
@@ -294,6 +301,35 @@ class TreeModel(QAbstractItemModel):
         self.root_item.children = (
             self.tree_data
         )  # pyright: ignore [reportAttributeAccessIssue]
+        
+        # Clear the existing map and rebuild it
+        self.id_to_index_map = {}
+        self._build_id_index_map()
+
+    def _build_id_index_map(self) -> None:
+        """Build a mapping of item IDs to their QModelIndex"""
+        # Start with an empty map
+        self.id_to_index_map = {}
+        
+        # Process the root item's children (which are the top-level folders)
+        for row, item in enumerate(self.root_item.children):
+            # Create the index for this item
+            index = self.createIndex(row, 0, item)
+            # Add to the map
+            self.id_to_index_map[item.id] = index
+            # Recursively process this item's children
+            self._map_children_indices(item, index)
+
+    def _map_children_indices(self, parent_item: Folder | Note, parent_index: QModelIndex) -> None:
+        """Recursively map all children of an item to their indices"""
+        for row, child in enumerate(parent_item.children):
+            # Create the index for this child
+            child_index = self.createIndex(row, 0, child)
+            # Add to the map
+            self.id_to_index_map[child.id] = child_index
+            # If this child has children, process them too
+            if hasattr(child, 'children') and child.children:
+                self._map_children_indices(child, child_index)
 
 
     @Slot()
@@ -303,9 +339,17 @@ class TreeModel(QAbstractItemModel):
         self.beginResetModel()
 
         self._build_tree()
+        # The map is now rebuilt in _build_tree()
 
         # Notify the view that the model has been reset
         self.endResetModel()
+        
+    @Slot(str, result=QModelIndex)
+    def get_index_by_id(self, item_id: str) -> QModelIndex:
+        """Get the QModelIndex for an item with the given ID"""
+        if item_id in self.id_to_index_map:
+            return self.id_to_index_map[item_id]
+        return QModelIndex()
 
 
     @Slot(QModelIndex, result=str)
@@ -348,6 +392,8 @@ class TreeModel(QAbstractItemModel):
             
             # Notify the view that the data has changed
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+            
+            # The ID hasn't changed, so we don't need to update the map
             
             return True
         except Exception as e:
