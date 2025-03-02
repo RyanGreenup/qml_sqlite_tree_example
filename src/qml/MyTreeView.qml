@@ -47,6 +47,20 @@ TreeView {
         }
     }
 
+    // Edit Title Dialog
+    EditTitleDialog {
+        id: editTitleDialog
+
+        onTitleEdited: function(newTitle) {
+            // Get the current index
+            let index = treeView.selectionModel.currentIndex;
+            if (index.valid) {
+                // Update the title in the model
+                treeModel.update_title(index, newTitle);
+            }
+        }
+    }
+
     // Add keyboard shortcuts
     Keys.onPressed: function (event) {
         // 'j' key to move down (like Down arrow)
@@ -230,6 +244,28 @@ TreeView {
                     newNoteDialog.open();
                 }
                 shortcut: "N"
+            }
+
+            Action {
+                text: qsTr("&Edit Title")
+                enabled: true
+                onTriggered: {
+                    let index = tree_delegate.treeView.selectionModel.currentIndex
+
+                    tree_delegate.treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.ClearAndSelect);
+
+                    if (index.valid) {
+                        // Get the current title
+                        let currentTitle = treeModel.get_title(index);
+
+                        // Set the current title in the dialog
+                        editTitleDialog.currentTitle = currentTitle;
+
+                        // Show the dialog
+                        editTitleDialog.open();
+                    }
+                }
+                shortcut: "E"
             }
 
             Action {
