@@ -207,9 +207,11 @@ TreeView {
                 text: qsTr("Create &New Note")
                 enabled: true
                 onTriggered: {
-                    let index = tree_delegate.treeView.index(tree_delegate.row, tree_delegate.column);
-                    console.log("Row is: " + tree_delegate.row);
-
+                    // WARNING: This will work only for the context menu
+                    // let index = tree_delegate.treeView.index(tree_delegate.row, tree_delegate.column);
+                    // This will work for both
+                    let index = tree_delegate.treeView.selectionModel.currentIndex
+                    // This type isn't available so it can't be `required`, however, it's passed to the delegate
                     treeModel.createNewNote(index);
                 }
                 shortcut: "N"
