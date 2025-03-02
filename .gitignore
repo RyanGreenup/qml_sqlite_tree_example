@@ -4,3 +4,5 @@ src/__pycache__
 .aider.tags.cache.v3
 exemplar_data.sqlite
 exemplar_data.sqlite
+src/exemplar_data.sqlite-shm
+src/exemplar_data.sqlite-wal

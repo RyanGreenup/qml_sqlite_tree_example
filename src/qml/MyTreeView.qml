@@ -17,6 +17,7 @@ TreeView {
 
     selectionModel: ItemSelectionModel {
         onCurrentChanged: function(current, previous) {
+            // current: QModelIndex
             if (current.valid) {
                 // Get details from the model and emit the signal
                 let details = treeModel.getItemDetails(current);
