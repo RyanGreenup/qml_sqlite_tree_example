@@ -13,6 +13,9 @@ TreeView {
 
     // Signal to emit when the current item changes
     signal currentItemChanged(string statistics)
+    
+    // Property to store the parent index for new notes
+    property var currentParentIndex: null
 
 
     selectionModel: ItemSelectionModel {
@@ -32,6 +35,17 @@ TreeView {
     // Connect to the KeyEmitter when the component is created
     Component.onCompleted: {
         keyEmitter.setView(treeView);
+    }
+    
+    // New Note Dialog
+    NewNoteDialog {
+        id: newNoteDialog
+        
+        onNoteCreated: function(title, body) {
+            if (treeView.currentParentIndex) {
+                treeModel.createNoteWithDetails(treeView.currentParentIndex, title, body);
+            }
+        }
     }
 
     // Add keyboard shortcuts
@@ -207,12 +221,14 @@ TreeView {
                 text: qsTr("Create &New Note")
                 enabled: true
                 onTriggered: {
-                    // WARNING: This will work only for the context menu
-                    // let index = tree_delegate.treeView.index(tree_delegate.row, tree_delegate.column);
-                    // This will work for both
+                    // Get the current index
                     let index = tree_delegate.treeView.selectionModel.currentIndex
-                    // This type isn't available so it can't be `required`, however, it's passed to the delegate
-                    treeModel.createNewNote(index);
+                    
+                    // Store the current index for later use
+                    treeView.currentParentIndex = index
+                    
+                    // Show the dialog
+                    newNoteDialog.open()
                 }
                 shortcut: "N"
             }

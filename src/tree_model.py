@@ -239,14 +239,21 @@ class TreeModel(QAbstractItemModel):
         parent_item = self._get_item(parent_index)
         if parent_item is None:
             return
+            
+        # The actual note creation will be handled by createNoteWithDetails
+        # This method now just signals that we want to create a note under this parent
+        # The UI will show a dialog and then call createNoteWithDetails
+        pass
+        
+    @Slot(QModelIndex, str, str)
+    def createNoteWithDetails(self, parent_index: QModelIndex, title: str, body: str) -> None:
+        """Create a new note with the specified title and body under the parent item"""
+        if not parent_index.isValid():
+            return
 
-        # Create a default title and body for the new note
-        new_title = "New Note"
-        new_body = "Enter your note here..."
-
-        # Begin inserting rows
-        parent_row = parent_index.row()
-        parent_parent = self.parent(parent_index)
+        parent_item = self._get_item(parent_index)
+        if parent_item is None:
+            return
 
         # Get the position where the new note will be inserted
         insert_position = len(parent_item.children)
@@ -256,8 +263,8 @@ class TreeModel(QAbstractItemModel):
 
         # Create the new note in the database and get the Note object
         new_note = self.db_handler.create_note(
-            title=new_title,
-            body=new_body,
+            title=title,
+            body=body,
             parent=parent_item
         )
 
