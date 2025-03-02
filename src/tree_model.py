@@ -10,7 +10,7 @@ from PySide6.QtCore import (
     Slot,
 )
 from typing import final, override
-from .database_handler import Note, Folder, DatabaseHandler
+from src.database_handler import Note, Folder, DatabaseHandler
 
 
 @final

@@ -5,9 +5,9 @@ from pathlib import Path
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType, QQmlContext
 from PySide6.QtWidgets import QApplication
-from .tree_model import TreeModel
-from .key_emitter import KeyEmitter
-from .init_db import create_sqlite_data, create_sqlite_database
+from src.tree_model import TreeModel
+from src.key_emitter import KeyEmitter
+from src.init_db import create_sqlite_data, create_sqlite_database
 import sqlite3
 
 
