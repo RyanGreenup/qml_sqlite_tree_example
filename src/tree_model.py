@@ -306,3 +306,19 @@ class TreeModel(QAbstractItemModel):
 
         # Notify the view that the model has been reset
         self.endResetModel()
+
+
+    @Slot(QModelIndex, result=str)
+    def get_id(self, index: QModelIndex) -> str:
+        if (item := self._get_item(index)):
+            return item.id
+        else:
+            return ""
+
+
+    @Slot(QModelIndex, result=str)
+    def get_title(self, index: QModelIndex) -> str:
+        if (item := self._get_item(index)):
+            return item.title
+        else:
+            return ""

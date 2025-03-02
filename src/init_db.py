@@ -54,16 +54,16 @@ def create_sqlite_data(conn: sqlite3.Connection):
     cursor.execute("DELETE FROM folders")
 
     # Create a folder
-    cursor.execute("INSERT INTO folders (id, name) VALUES (1, 'Test Folder')")
+    cursor.execute("INSERT INTO folders (id, name) VALUES (77, 'Test Folder')")
 
     # Create parent notes
     cursor.execute("""
         INSERT INTO notes (id, title, body, folder_id, parent_note_id)
-        VALUES (1, 'Parent1', 'Parent1 description', 1, NULL)
+        VALUES (1, 'Parent1', 'Parent1 description', 77, NULL)
     """)
     cursor.execute("""
         INSERT INTO notes (id, title, body, folder_id, parent_note_id)
-        VALUES (2, 'Parent2', 'Parent2 description', 1, NULL)
+        VALUES (2, 'Parent2', 'Parent2 description', 77, NULL)
     """)
 
     # Create child notes under Parent1
