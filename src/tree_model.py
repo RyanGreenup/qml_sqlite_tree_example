@@ -322,3 +322,34 @@ class TreeModel(QAbstractItemModel):
             return item.title
         else:
             return ""
+            
+    @Slot(QModelIndex, str, result=bool)
+    def update_title(self, index: QModelIndex, new_title: str) -> bool:
+        """
+        Update the title of a Note or Folder
+        
+        Args:
+            index: The QModelIndex of the item to update
+            new_title: The new title to set
+            
+        Returns:
+            bool: True if the update was successful, False otherwise
+        """
+        if not index.isValid() or not new_title.strip():
+            return False
+            
+        item = self._get_item(index)
+        if item is None:
+            return False
+            
+        try:
+            # Update the title in the database and the object
+            self.db_handler.update_title(item, new_title)
+            
+            # Notify the view that the data has changed
+            self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+            
+            return True
+        except Exception as e:
+            print(f"Error updating title: {e}", file=sys.stderr)
+            return False
