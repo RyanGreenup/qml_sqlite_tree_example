@@ -343,8 +343,8 @@ TreeView {
                     
                     // Use a timer to ensure the model is fully updated before restoring
                     Timer {
-                        interval: 100
-                        running: true
+                        interval: 100,
+                        running: true,
                         onTriggered: {
                             // Restore expanded state
                             get_indexes_from_ids(current_expanded);
