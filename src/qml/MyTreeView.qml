@@ -46,7 +46,8 @@ TreeView {
         positionViewAtRow(rowAtIndex(index), Qt.AlignVCenter)
 
         // Set the current Item
-        // Set the current item using the selection model of the treeView AI!
+        // Set the current item using the selection model
+        treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.ClearAndSelect);
     }
 
     function get_indexes_from_ids(id_list) {
