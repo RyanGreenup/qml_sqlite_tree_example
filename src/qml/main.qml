@@ -52,9 +52,9 @@ ApplicationWindow {
             color: Universal.background
 
             // Allow Focus
-            focus: true
-            activeFocusOnTab: true
-            border.width: activeFocus ? 10 : 0
+            focus: false
+            activeFocusOnTab: false
+            border.width: scroll_view.activeFocus ? 10 : 0
             border.color: Universal.accent
 
             // Display area for the current item statistics
@@ -71,6 +71,7 @@ ApplicationWindow {
                 ScrollView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    id: scroll_view
 
                     TextArea {
                         id: noteBody
