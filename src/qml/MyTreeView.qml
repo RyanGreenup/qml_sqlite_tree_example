@@ -16,6 +16,40 @@ TreeView {
 
     // Property to store the parent index for new notes
     property var currentParentIndex: null
+    
+    // Property to store expanded item IDs
+    property var expanded_items: []
+    
+    // Helper functions for index/row conversion
+    function get_row_from_index(index) {
+        // Return the row from a model index
+        if (index && index.valid) {
+            return index.row;
+        }
+        return -1;
+    }
+
+    function get_index_from_row(row, column = 0) {
+        // Create and return a model index for the given row and column
+        return treeView.index(row, column);
+    }
+    
+    function get_indexes_from_ids(id_list) {
+        var index_list = [];
+        var row_list = [];
+        for (let i = 0; i < id_list.length; i++) {
+            let id = id_list[i];
+            console.log("Considering expand of: " + id);
+            let index = treeModel.get_index_by_id(id);
+            if (index && index.valid) {
+                try {
+                    treeView.expandToIndex(index);
+                } catch (e) {
+                    console.error("Error expanding index: " + e);
+                }
+            }
+        }
+    }
 
     selectionModel: ItemSelectionModel {
         onCurrentChanged: function (current, previous) {
@@ -30,6 +64,28 @@ TreeView {
 
     // Connect to our Python model
     model: treeModel
+    
+    // Track expanded and collapsed items
+    onExpanded: function (row, depth) {
+        // NOTE depth always 1 according to docs
+        // Store expanded items to potentially restore state later
+        let index = get_index_from_row(row, 0);
+        console.log("----------------_> " + index);
+        let id = treeModel.get_id(index);
+        let title = treeModel.get_title(index);
+        treeView.expanded_items.push(id);
+        console.log("Expanded " + id + "( " + title + ") all: " + treeView.expanded_items);
+    }
+    
+    onCollapsed: function (row) {
+        let index = get_index_from_row(row);
+        let id = treeModel.get_id(index);
+        // Remove collapsed items from the expanded_items array
+        const js_index = expanded_items.indexOf(id);
+        if (js_index !== -1) {
+            expanded_items.splice(js_index, 1);
+        }
+    }
 
     // Connect to the KeyEmitter when the component is created
     Component.onCompleted: {
@@ -279,7 +335,21 @@ TreeView {
             Action {
                 text: qsTr("&Refresh Tree")
                 onTriggered: {
+                    // Store current expanded items before refresh
+                    let current_expanded = [...treeView.expanded_items];
+                    
+                    // Refresh the tree
                     treeModel.refreshTree();
+                    
+                    // Use a timer to ensure the model is fully updated before restoring
+                    Timer {
+                        interval: 100
+                        running: true
+                        onTriggered: {
+                            // Restore expanded state
+                            get_indexes_from_ids(current_expanded);
+                        }
+                    }
                 }
                 shortcut: "R"
             }
