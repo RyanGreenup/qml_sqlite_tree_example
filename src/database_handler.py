@@ -166,6 +166,50 @@ class DatabaseHandler:
         parent.children.append(note)
 
         return note
+        
+    def update_title(self, item: Note | Folder, new_title: str) -> None:
+        """
+        Update the title of a Note or Folder
+        
+        Args:
+            item: The Note or Folder to update
+            new_title: The new title to set
+            
+        Raises:
+            TypeError: If item is neither a Note nor a Folder
+        """
+        # Get the current timestamp
+        now = datetime.now()
+        
+        if isinstance(item, Note):
+            # Update the note in the database
+            self.cursor.execute(
+                """
+                UPDATE notes 
+                SET title = ?, updated_at = ? 
+                WHERE id = ?
+                """,
+                (new_title, now, item.id)
+            )
+        elif isinstance(item, Folder):
+            # Update the folder in the database
+            self.cursor.execute(
+                """
+                UPDATE folders 
+                SET name = ?, updated_at = ? 
+                WHERE id = ?
+                """,
+                (new_title, now, item.id)
+            )
+        else:
+            raise TypeError("Item must be either a Note or Folder")
+            
+        # Commit the changes
+        self.connection.commit()
+        
+        # Update the object
+        item.title = new_title
+        item.updated_at = now
 
     def get_folders_with_notes(self) -> list[Folder]:
         """
